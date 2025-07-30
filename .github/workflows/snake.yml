@@ -1,1 +1,36 @@
 
+name: Generate Snake Animation
+
+on:
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: "0 0 * * *" # Chạy mỗi ngày lúc 00:00 UTC
+
+jobs:
+  generate-snake:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Cấp quyền ghi cho workflow
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Generate Snake GIF
+        uses: Platane/snk@v3
+        with:
+          github_user_name: ${{ github.repository_owner }}
+          outputs: |
+            dist/github-contribution-grid-snake.svg
+            dist/github-contribution-grid-snake-dark.svg?palette=github-dark
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "GitHub Action"
+          git config user.email "action@github.com"
+          git add dist/*
+          git commit -m "Update snake animation" || echo "No changes to commit"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
